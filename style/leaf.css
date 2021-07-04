@@ -1,0 +1,10 @@
+
+.leaf-line {
+  border-left: 2px solid hsl(0, 100%, 0%, 0.0);
+  transition-duration: 200ms;
+  transition-property: border;
+  cursor: default;
+}
+.leaf-line:focus {
+  border-left: 2px solid white;
+}

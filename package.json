@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "@calcit/procs": "^0.4.4"
+    "@calcit/procs": "^0.4.4",
+    "@mvc-works/codearea": "^0.0.2"
   },
   "devDependencies": {
     "vite": "^2.3.8"
