@@ -26,6 +26,11 @@
   resolved "https://registry.npmjs.org/@cirru/writer.ts/-/writer.ts-0.1.3.tgz#5f54bdecaa20ba3dab16cbe6da711854138a9c0a"
   integrity sha512-vJnhmhm7we5UfQIwmZfQpF3bAFbVybzT6LbmkbQHxgijaQg3gPfNVsnSIa3g3KpmWVtvkzEx+nUy5aMwsJiV1A==
 
+"@mvc-works/codearea@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.npmjs.org/@mvc-works/codearea/-/codearea-0.0.2.tgz#9e9b8ea26111f870f36752dd790b15716b8201af"
+  integrity sha512-HHkFO9qRfeGnwdxwMhVxxExiqvSgl8MiP5RXzNWWtR4Zg8Ue6UUzgaaG+ICQi9hemA2L2Dydp7K0meFFm1DHpw==
+
 colorette@^1.2.2:
   version "1.2.2"
   resolved "https://registry.npmjs.org/colorette/-/colorette-1.2.2.tgz#cbcc79d5e99caea2dbf10eb3a26fd8b3e6acfa94"
