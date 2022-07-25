@@ -1,19 +1,10 @@
 
 {} (:package |app)
-  :configs $ {} (:init-fn |app.main/main!) (:reload-fn |app.main/reload!)
+  :configs $ {} (:init-fn |app.main/main!) (:reload-fn |app.main/reload!) (:version |0.0.1)
     :modules $ [] |respo.calcit/compact.cirru |lilac/compact.cirru |memof/compact.cirru |respo-ui.calcit/compact.cirru |reel.calcit/compact.cirru
-    :version |0.0.1
+  :entries $ {}
   :files $ {}
     |app.comp.container $ {}
-      :ns $ quote
-        ns app.comp.container $ :require
-          respo.util.format :refer $ hsl
-          respo-ui.core :as ui
-          respo.core :refer $ defcomp defeffect <> >> div button textarea span input defeffect a
-          respo.comp.space :refer $ =<
-          reel.comp.reel :refer $ comp-reel
-          app.config :refer $ dev?
-          "\"@mvc-works/codearea" :refer $ codearea teardownCodearea
       :defs $ {}
         |comp-container $ quote
           defcomp comp-container (reel)
@@ -52,11 +43,6 @@
                       :on-click $ fn (e d!)
                         d! cursor $ update state :hide-input? not
                   when dev? $ comp-reel (>> states :reel) reel ({})
-        |effect-text $ quote
-          defeffect effect-text () (action el a)
-            case-default action nil
-              :mount $ -> (js/document.querySelector "\".draft") (codearea)
-              :unmount $ -> (js/document.querySelector "\".draft") (teardownCodearea)
         |comp-leaf $ quote
           defcomp comp-leaf (leaves style level)
             div
@@ -85,6 +71,15 @@
                               :user-select :none
                           <> "\"_"
                         <> line
+        |effect-text $ quote
+          defeffect effect-text () (action el a)
+            case-default action nil
+              :mount $ -> (js/document.querySelector "\".draft") (codearea)
+              :unmount $ -> (js/document.querySelector "\".draft") (teardownCodearea)
+        |indentation $ quote (def indentation "\"  ")
+        |pack-buffer $ quote
+          defn pack-buffer (acc buffer)
+            if (empty? buffer) acc $ conj acc (parse-leaves buffer)
         |parse-leaves $ quote
           defn parse-leaves (lines0)
             apply-args
@@ -118,37 +113,26 @@
                               , l0
                             []
                             , false false $ rest lines
-        |pack-buffer $ quote
-          defn pack-buffer (acc buffer)
-            if (empty? buffer) acc $ conj acc (parse-leaves buffer)
-        |indentation $ quote (def indentation "\"  ")
-      :proc $ quote ()
+      :ns $ quote
+        ns app.comp.container $ :require
+          respo.util.format :refer $ hsl
+          respo-ui.core :as ui
+          respo.core :refer $ defcomp defeffect <> >> div button textarea span input defeffect a
+          respo.comp.space :refer $ =<
+          reel.comp.reel :refer $ comp-reel
+          app.config :refer $ dev?
+          "\"@mvc-works/codearea" :refer $ codearea teardownCodearea
     |app.config $ {}
-      :ns $ quote (ns app.config)
       :defs $ {}
         |dev? $ quote
-          def dev? $ = "\"dev" (get-env "\"mode")
+          def dev? $ = "\"dev" (get-env "\"mode" "\"release")
         |site $ quote
           def site $ {} (:storage-key "\"workflow")
-      :proc $ quote ()
+      :ns $ quote (ns app.config)
     |app.main $ {}
-      :ns $ quote
-        ns app.main $ :require
-          respo.core :refer $ render! clear-cache!
-          app.comp.container :refer $ comp-container
-          app.updater :refer $ updater
-          app.schema :as schema
-          reel.util :refer $ listen-devtools!
-          reel.core :refer $ reel-updater refresh-reel
-          reel.schema :as reel-schema
-          app.config :as config
       :defs $ {}
-        |repeat! $ quote
-          defn repeat! (duration cb)
-            js/setTimeout
-              fn () (cb)
-                repeat! (* 1000 duration) cb
-              * 1000 duration
+        |*reel $ quote
+          defatom *reel $ -> reel-schema/reel (assoc :base schema/store) (assoc :store schema/store)
         |dispatch! $ quote
           defn dispatch! (op op-data)
             when
@@ -168,32 +152,41 @@
               when (some? raw)
                 dispatch! :hydrate-storage $ parse-cirru-edn raw
             println "|App started."
+        |mount-target $ quote
+          def mount-target $ .!querySelector js/document |.app
         |persist-storage! $ quote
           defn persist-storage! () $ .!setItem js/localStorage (:storage-key config/site)
             format-cirru-edn $ :store @*reel
-        |*reel $ quote
-          defatom *reel $ -> reel-schema/reel (assoc :base schema/store) (assoc :store schema/store)
-        |render-app! $ quote
-          defn render-app! () $ render! mount-target (comp-container @*reel) dispatch!
         |reload! $ quote
           defn reload! () (remove-watch *reel :changes) (clear-cache!)
             add-watch *reel :changes $ fn (reel prev) (render-app!)
             reset! *reel $ refresh-reel @*reel schema/store updater
-        |mount-target $ quote
-          def mount-target $ .!querySelector js/document |.app
-      :proc $ quote ()
+        |render-app! $ quote
+          defn render-app! () $ render! mount-target (comp-container @*reel) dispatch!
+        |repeat! $ quote
+          defn repeat! (duration cb)
+            js/setTimeout
+              fn () (cb)
+                repeat! (* 1000 duration) cb
+              * 1000 duration
+      :ns $ quote
+        ns app.main $ :require
+          respo.core :refer $ render! clear-cache!
+          app.comp.container :refer $ comp-container
+          app.updater :refer $ updater
+          app.schema :as schema
+          reel.util :refer $ listen-devtools!
+          reel.core :refer $ reel-updater refresh-reel
+          reel.schema :as reel-schema
+          app.config :as config
     |app.schema $ {}
-      :ns $ quote (ns app.schema)
       :defs $ {}
         |store $ quote
           def store $ {}
             :states $ {}
               :cursor $ []
-      :proc $ quote ()
+      :ns $ quote (ns app.schema)
     |app.updater $ {}
-      :ns $ quote
-        ns app.updater $ :require
-          respo.cursor :refer $ update-states
       :defs $ {}
         |updater $ quote
           defn updater (store op data op-id op-time)
@@ -201,4 +194,6 @@
               :states $ update-states store data
               :hydrate-storage data
               op store
-      :proc $ quote ()
+      :ns $ quote
+        ns app.updater $ :require
+          respo.cursor :refer $ update-states
